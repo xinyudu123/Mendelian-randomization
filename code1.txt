@@ -1,0 +1,26 @@
+
+Two-sample Mendelian randomization analysis is used to explore the causal relationship between gut micobiota and ankylosing spondylitis. For example, with phylum.Bacteroidetes as the exposure and ankylosing spondylitis as the outcome, the running code for two-sample mendelian randomization analysis is as follows.
+
+
+setwd("")
+a<-read.table("phylum.Bacteroidetes.id.905.summary.txt",header = T)
+View(a)
+b<-subset(a,P.weightedSumZ<1e-05)
+View(b)
+library(TwoSampleMR)
+write.csv(b, file="phylum.Bacteroidetes.csv")
+Bacteroidetes<-system.file("phylum.Bacteroidetes.csv",package = "TwoSampleMR")
+bacteroidetes_exp_dat_clumped<-read_exposure_data(filename = Bacteroidetes,sep = ",",snp_col = "SNP",beta_col = "beta",se_col = "se",effect_allele_col = "effect_allele",other_allele_col = "other_allele",clump = TRUE)
+write.csv(bacteroidetes_exp_dat_clumped, file="bacteroidetes_exp_dat_clumped.csv")
+as <- extract_outcome_data(snps = bacteroidetes_exp_dat_clumped$SNP, outcomes = 'finn-b-M13_ANKYLOSPON')
+View(as)
+dat<-harmonise_data(exposure_dat = bacteroidetes_exp_dat_clumped,outcome_dat = as)
+write.csv(dat,file = "harmonized_data_bacteroidetes.csv")
+mr(dat)
+generate_odds_ratios(mr_res = mr(dat))
+mr_scatter_plot(mr_results = mr(dat,method_list = c("mr_ivw","mr_egger_regression","mr_weighted_median","mr_weighted_mode","mr_simple_mode")),dat)
+mr_funnel_plot(singlesnp_results = mr_singlesnp(dat))
+mr_leaveoneout_plot(leaveoneout_results = mr_leaveoneout(dat))
+mr_pleiotropy_test(dat)
+run_mr_presso(dat,NbDistribution = 10000)
+mr_heterogeneity(dat)

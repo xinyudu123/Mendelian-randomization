@@ -1,0 +1,20 @@
+
+
+Two-sample mendelian randomization analysis is used to explore the causal relationship between ankylosing spondylitis and gut micobiota. For example, with ankylosing spondylitis as the exposure and  class.Actinobacteria as the outcome, the running code for two-sample mendelian randomization analysis is as follows.
+
+setwd("")
+library(TwoSampleMR)
+as<- extract_instruments(outcomes = 'finn-b-M13_ANKYLOSPON')
+write.csv(as, file="as.csv")
+Actinobacteria<-read.table("class.Actinobacteria.id.419.summary.txt",header = T)
+d<-merge(as,Actinobacteria,by.x = "SNP",by.y = "rsID")
+write.csv(d,file = "outcome.csv")
+outcome_dat<-read_outcome_data(snps = as$SNP,filename = "outcome.csv",sep = ",",snp_col = "SNP",beta_col = "beta",se_col = "se",effect_allele_col = "effect_allele",other_allele_col = "other_allele",pval_col = "p")
+dat<-harmonise_data(exposure_dat = as,outcome_dat = outcome_dat)
+write.csv(dat,file = "harmonized_data_Actinobacteria.csv")
+mr(dat)
+generate_odds_ratios(mr_res = mr(dat))
+mr_leaveoneout_plot(leaveoneout_results = mr_leaveoneout(dat))
+mr_pleiotropy_test(dat)
+run_mr_presso(dat,NbDistribution = 10000)
+mr_heterogeneity(dat)
